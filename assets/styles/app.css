@@ -1,0 +1,64 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --hak-green: #0f6b5c;
+  --hak-orange: #e8530e;
+  --hak-bg: #f3f5f4;
+  --hak-ok: #1f8a4c;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hak-bg: #0b1110;
+  }
+  body {
+    background: #0b1110;
+    color: #e8f2f0;
+  }
+}
+
+* {
+  font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Bricolage Grotesque', 'Figtree', sans-serif;
+}
+
+body {
+  background: var(--hak-bg);
+  min-height: 100dvh;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-white font-semibold shadow-sm transition;
+  background: var(--hak-green);
+  min-height: 44px;
+}
+
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-primary:focus-visible { outline: 3px solid rgba(15,107,92,.4); outline-offset: 2px; }
+
+.btn-orange {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-white font-semibold shadow-sm transition;
+  background: var(--hak-orange);
+  min-height: 44px;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold transition min-h-[44px];
+}
+
+.card {
+  @apply rounded-xl bg-white shadow-sm border border-slate-100 overflow-hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    @apply bg-slate-900 border-slate-800 text-slate-100;
+  }
+  .btn-ghost { @apply text-slate-100; }
+}

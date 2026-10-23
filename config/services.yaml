@@ -1,0 +1,25 @@
+parameters:
+    app.vapid_public_key: '%env(string:default::VAPID_PUBLIC_KEY)%'
+    app.vapid_private_key: '%env(string:default::VAPID_PRIVATE_KEY)%'
+    app.vapid_subject: '%env(default:app.vapid_subject_default:VAPID_SUBJECT)%'
+    app.vapid_subject_default: 'mailto:contact@hak7all.tn'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+    App\Security\LoginSuccessHandler: ~
+
+    App\Service\LogSmsSender: ~
+
+    App\Service\SmsSenderInterface: '@App\Service\LogSmsSender'
+
+    App\Service\WebPushSender:
+        arguments:
+            $vapidPublicKey: '%app.vapid_public_key%'
+            $vapidPrivateKey: '%app.vapid_private_key%'
+            $vapidSubject: '%app.vapid_subject%'

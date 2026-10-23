@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes demandes — Hak 7all{% endblock %}
+
+{% block body %}
+<section>
+    <header class="mb-4">
+        <h1 class="text-2xl font-bold">Mes demandes</h1>
+        <p class="text-slate-600">Suivez l’état de vos demandes en temps réel.</p>
+    </header>
+
+    <div class="grid gap-3" id="client-requests-list">
+        {% for request in requests %}
+            <article class="card p-4" id="demande-{{ request.id }}">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h2 class="font-semibold">{{ request.worker.fullName }}</h2>
+                        <p class="text-sm text-slate-600">{{ request.worker.workerProfile.trade.name }} · {{ request.worker.city.name }}</p>
+                        <p class="mt-2 text-sm whitespace-pre-line">{{ request.message }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs {% if request.status == 'accepted' %}bg-emerald-50 text-emerald-700{% elseif request.status == 'declined' %}bg-red-50 text-red-700{% else %}bg-slate-100 text-slate-600{% endif %}">{{ request.statusLabel }}</span>
+                        {% if request.isUrgent %}
+                            <span class="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-orange-50 text-[color:var(--hak-orange)]">Urgent</span>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-slate-500">{{ request.createdAt|date('d/m/Y H:i') }}</p>
+                    </div>
+                </div>
+                {% if request.isAccepted %}
+                    <div class="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2">
+                        <div>
+                            <p class="text-sm font-medium text-emerald-900">Artisan contactable</p>
+                            <p class="font-mono text-emerald-900">+216 {{ request.worker.phone }}</p>
+                        </div>
+                        <button class="text-sm text-emerald-900 hover:underline" onclick="navigator.clipboard.writeText('+216 {{ request.worker.phone }}'); this.textContent='Copié';">Copier</button>
+                    </div>
+                {% endif %}
+            </article>
+        {% else %}
+            <div class="card p-6 text-center text-slate-600">
+                Vous n’avez encore envoyé aucune demande.
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% if app.user %}
+<script>
+const topic = 'user/{{ app.user.id }}/requests';
+const url = new URL('{{ mercure() }}');
+url.searchParams.append('topic', topic);
+
+const eventSource = new EventSource(url);
+eventSource.onmessage = (event) => {
+    try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'request_status') {
+            fetch('{{ path('app_client_requests_json') }}')
+                .then((r) => r.json())
+                .then((json) => {
+                    const list = document.getElementById('client-requests-list');
+                    if (!list) return;
+                    list.innerHTML = '';
+                    json.requests.forEach((req) => {
+                        const article = document.createElement('article');
+                        article.className = 'card p-4';
+                        article.id = 'demande-' + req.id;
+                        let statusClass = 'bg-slate-100 text-slate-600';
+                        if (req.status === 'accepted') statusClass = 'bg-emerald-50 text-emerald-700';
+                        if (req.status === 'declined') statusClass = 'bg-red-50 text-red-700';
+                        article.innerHTML = `
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <h2 class="font-semibold">${req.workerName || ''}</h2>
+                                    <p class="text-sm text-slate-600">${req.trade || ''}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs ${statusClass}">${req.statusLabel}</span>
+                                    ${req.isUrgent ? '<span class="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-orange-50 text-[color:var(--hak-orange)]">Urgent</span>' : ''}
+                                    <p class="mt-1 text-xs text-slate-500">${req.createdAt}</p>
+                                </div>
+                            </div>
+                            ${req.isAccepted && req.workerPhone ? `<div class="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2"><div><p class="text-sm font-medium text-emerald-900">Artisan contactable</p><p class="font-mono text-emerald-900">+216 ${req.workerPhone.replace(/\s/g,'')}</p></div><button class="text-sm text-emerald-900 hover:underline" onclick="navigator.clipboard.writeText('+216 ${req.workerPhone.replace(/\s/g,'')}'); this.textContent='Copié';">Copier</button></div>` : ''}
+                        `;
+                        list.appendChild(article);
+                    });
+                });
+        }
+    } catch (e) {}
+};
+</script>
+{% endif %}
+{% endblock %}

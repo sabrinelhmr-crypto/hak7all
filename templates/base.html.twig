@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <title>{% block title %}Hak 7all{% endblock %}</title>
+        <meta name="theme-color" content="#0f6b5c">
+        <link rel="manifest" href="{{ asset('manifest.json') }}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192.png') }}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+        {% block stylesheets %}
+        {% endblock %}
+
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body class="min-h-screen">
+        <header class="sticky top-0 z-40 bg-[color:var(--hak-green)] text-white">
+            <div class="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+                <a href="{{ path('app_home') }}" class="flex items-center gap-2">
+                    <span class="text-lg font-bold" style="font-family:'Bricolage Grotesque',sans-serif;">Hak 7all</span>
+                    <span class="hidden sm:inline text-sm opacity-90">artisans près de chez vous</span>
+                </a>
+                <div class="flex items-center gap-2">
+                    {% if app.user %}
+                        {% if is_granted('ROLE_WORKER') %}
+                            <a href="{{ path('app_worker_profile') }}" class="btn-ghost text-white/90">Mon profil</a>
+                            <a href="{{ path('app_worker_requests') }}" class="btn-ghost text-white/90 relative">
+                                Demandes
+                                <span id="worker-badge" class="ml-1 hidden rounded-full bg-[color:var(--hak-orange)] px-2 py-0.5 text-xs">0</span>
+                            </a>
+                        {% elseif is_granted('ROLE_CLIENT') %}
+                            <a href="{{ path('app_client_search') }}" class="btn-ghost text-white/90">Rechercher</a>
+                            <a href="{{ path('app_client_requests') }}" class="btn-ghost text-white/90">Mes demandes</a>
+                        {% endif %}
+                        <a href="{{ path('app_account') }}" class="btn-ghost text-white/90 hidden sm:inline">{{ app.user.fullName }}</a>
+                        <form action="{{ path('app_logout') }}" method="post">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                            <button class="btn-ghost text-white/90">Déconnexion</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <main class="mx-auto max-w-5xl px-4 py-6">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div role="alert" class="mb-3 rounded-lg px-4 py-3 {% if label == 'error' %}bg-red-50 text-red-900 border border-red-200{% elseif label == 'warning' %}bg-amber-50 text-amber-900 border border-amber-200{% else %}bg-emerald-50 text-emerald-900 border border-emerald-200{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            {% block body %}{% endblock %}
+        </main>
+
+        <footer class="mx-auto max-w-5xl px-4 py-8 text-sm text-slate-600">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <p>© {{ 'now'|date('Y') }} Hak 7all</p>
+                <div class="flex gap-4">
+                    <a href="{{ path('app_terms') }}" class="hover:underline">Conditions d'utilisation</a>
+                    <a href="{{ path('app_privacy') }}" class="hover:underline">Politique de confidentialité</a>
+                </div>
+            </div>
+        </footer>
+
+        {% if is_granted('ROLE_WORKER') %}
+            <script>
+                async function updateBadge() {
+                    try {
+                        const res = await fetch('{{ path('app_worker_badge') }}');
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        const badge = document.getElementById('worker-badge');
+                        if (!badge) return;
+                        if (data.pending > 0) {
+                            badge.textContent = data.pending;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    } catch (e) {}
+                }
+                updateBadge();
+                setInterval(updateBadge, 30000);
+            </script>
+        {% endif %}
+    </body>
+</html>

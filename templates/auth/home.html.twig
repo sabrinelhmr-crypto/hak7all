@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hak 7all — Connexion ou inscription{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-md">
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold">Hak 7all</h1>
+        <p class="text-slate-600">artisans près de chez vous</p>
+    </div>
+
+    <div class="card">
+        <div class="grid grid-cols-2 border-b border-slate-100">
+            <button type="button" class="px-4 py-3 font-semibold text-[color:var(--hak-green)] border-b-2 border-[color:var(--hak-green)]" id="tab-login">Se connecter</button>
+            <button type="button" class="px-4 py-3 font-semibold text-slate-600" id="tab-register">Créer un compte</button>
+        </div>
+
+        <div class="p-4 sm:p-6" id="panel-login">
+            <form action="{{ path('app_login') }}" method="post">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <div class="mb-3">
+                    <label for="username" class="block text-sm font-medium mb-1">Adresse e-mail</label>
+                    <input type="email" id="username" name="_username" value="{{ lastUsername }}" autocomplete="email" required class="w-full rounded-lg border border-slate-200 px-3 py-3" style="min-height:44px;">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="block text-sm font-medium mb-1">Mot de passe</label>
+                    <input type="password" id="password" name="_password" autocomplete="current-password" required class="w-full rounded-lg border border-slate-200 px-3 py-3" style="min-height:44px;">
+                </div>
+                {% if loginError %}
+                    <div role="alert" class="mb-3 text-sm text-red-700">{{ loginError.messageKey|trans(loginError.messageData, 'security') }}</div>
+                {% endif %}
+                <button class="btn-primary w-full">Se connecter</button>
+            </form>
+            <p class="mt-3 text-sm text-center">
+                <a href="{{ path('app_forgot_password_request') }}" class="text-[color:var(--hak-green)] hover:underline">Mot de passe oublié ?</a>
+            </p>
+        </div>
+
+        <div class="p-4 sm:p-6 hidden" id="panel-register">
+            {{ form_start(registrationForm, {attr: {novalidate: 'novalidate'}}) }}
+                <div class="mb-3">
+                    {{ form_label(registrationForm.role) }}
+                    <div class="mt-2 grid grid-cols-1 gap-2">
+                        {{ form_widget(registrationForm.role, {attr: {class: 'flex flex-col gap-2'}}) }}
+                    </div>
+                    {{ form_errors(registrationForm.role) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.fullName) }}
+                    {{ form_widget(registrationForm.fullName, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                    {{ form_errors(registrationForm.fullName) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.phone) }}
+                    {{ form_widget(registrationForm.phone, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                    <p class="text-xs text-slate-500 mt-1">{{ form_help(registrationForm.phone) }}</p>
+                    {{ form_errors(registrationForm.phone) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.city) }}
+                    {{ form_widget(registrationForm.city, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                    {{ form_errors(registrationForm.city) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.email) }}
+                    {{ form_widget(registrationForm.email, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.plainPassword.first) }}
+                    {{ form_widget(registrationForm.plainPassword.first, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                    <p class="text-xs text-slate-500 mt-1">{{ form_help(registrationForm.plainPassword.first) }}</p>
+                    {{ form_errors(registrationForm.plainPassword.first) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.plainPassword.second) }}
+                    {{ form_widget(registrationForm.plainPassword.second, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                    {{ form_errors(registrationForm.plainPassword.second) }}
+                </div>
+
+                <div class="js-worker-fields hidden">
+                    <div class="mb-3">
+                        {{ form_label(registrationForm.trade) }}
+                        {{ form_widget(registrationForm.trade, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                        {{ form_errors(registrationForm.trade) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(registrationForm.rateTnd) }}
+                        {{ form_widget(registrationForm.rateTnd, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                        <p class="text-xs text-slate-500 mt-1">{{ form_help(registrationForm.rateTnd) }}</p>
+                        {{ form_errors(registrationForm.rateTnd) }}
+                    </div>
+
+                    <label class="mb-3 flex items-start gap-3">
+                        {{ form_widget(registrationForm.phonePublic, {attr: {class: 'mt-1'}}) }}
+                        <span class="text-sm">{{ form_label(registrationForm.phonePublic) }}</span>
+                    </label>
+                    {{ form_errors(registrationForm.phonePublic) }}
+                </div>
+
+                <label class="mb-3 flex items-start gap-3">
+                    {{ form_widget(registrationForm.acceptTerms, {attr: {class: 'mt-1'}}) }}
+                    <span class="text-sm">{{ form_label(registrationForm.acceptTerms) }}</span>
+                </label>
+                {{ form_errors(registrationForm.acceptTerms) }}
+
+                {{ form_rest(registrationForm) }}
+
+                <button class="btn-primary w-full">Créer un compte</button>
+            {{ form_end(registrationForm) }}
+        </div>
+    </div>
+</section>
+
+<script>
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
+const panelLogin = document.getElementById('panel-login');
+const panelRegister = document.getElementById('panel-register');
+
+tabLogin.addEventListener('click', () => {
+    tabLogin.classList.add('text-[color:var(--hak-green)]','border-b-2','border-[color:var(--hak-green)]');
+    tabLogin.classList.remove('text-slate-600');
+    tabRegister.classList.remove('text-[color:var(--hak-green)]','border-b-2','border-[color:var(--hak-green)]');
+    tabRegister.classList.add('text-slate-600');
+    panelLogin.classList.remove('hidden');
+    panelRegister.classList.add('hidden');
+});
+
+tabRegister.addEventListener('click', () => {
+    tabRegister.classList.add('text-[color:var(--hak-green)]','border-b-2','border-[color:var(--hak-green)]');
+    tabRegister.classList.remove('text-slate-600');
+    tabLogin.classList.remove('text-[color:var(--hak-green)]','border-b-2','border-[color:var(--hak-green)]');
+    tabLogin.classList.add('text-slate-600');
+    panelRegister.classList.remove('hidden');
+    panelLogin.classList.add('hidden');
+});
+
+const roleInputs = document.querySelectorAll('#{{ registrationForm.role.vars.id }} input[type=radio]');
+const workerFields = document.querySelector('.js-worker-fields');
+
+function toggleWorker() {
+    let worker = false;
+    roleInputs.forEach((input) => {
+        if (input.checked && input.value === 'ROLE_WORKER') {
+            worker = true;
+        }
+    });
+    workerFields.classList.toggle('hidden', !worker);
+}
+
+roleInputs.forEach((input) => input.addEventListener('change', toggleWorker));
+toggleWorker();
+</script>
+{% endblock %}

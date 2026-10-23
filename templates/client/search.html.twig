@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rechercher un artisan — Hak 7all{% endblock %}
+
+{% block body %}
+<section>
+    <header class="mb-4">
+        <h1 class="text-2xl font-bold">Trouver un artisan</h1>
+        <p class="text-slate-600">Plombiers, électriciens, serruriers et plus en Tunisie.</p>
+    </header>
+
+    <form method="get" class="card p-4 mb-4 flex flex-col sm:flex-row gap-3">
+        <div class="flex-1">
+            <label class="block text-sm font-medium mb-1" for="metier">Métier</label>
+            <select id="metier" name="metier" class="w-full rounded-lg border border-slate-200 px-3 py-3" style="min-height:44px;">
+                <option value="">Tous les métiers</option>
+                {% for trade in trades %}
+                    <option value="{{ trade.id }}" {% if selectedTrade and selectedTrade.id == trade.id %}selected{% endif %}>{{ trade.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <label class="flex items-center gap-2 mt-6 sm:mt-7">
+            <input type="checkbox" name="disponibles" value="1" {% if onlyAvailable %}checked{% endif %}>
+            <span>Disponibles maintenant</span>
+        </label>
+        <button class="btn-primary mt-6 sm:mt-7">Appliquer</button>
+    </form>
+
+    <div class="grid gap-3">
+        {% for profile in profiles %}
+            {% set worker = profile.user %}
+            <article class="card p-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="h-12 w-12 rounded-full bg-[color:var(--hak-green)]/10 text-[color:var(--hak-green)] flex items-center justify-center font-bold">
+                            {{ worker.initials }}
+                        </div>
+                        <div>
+                            <h2 class="font-semibold">{{ worker.fullName }}</h2>
+                            <p class="text-sm text-slate-600">{{ profile.trade.name }} · {{ worker.city.name }}</p>
+                            <div class="mt-1 flex items-center gap-2">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs {% if profile.isAvailable %}bg-emerald-50 text-emerald-700{% else %}bg-slate-100 text-slate-600{% endif %}">
+                                    {% if profile.isAvailable %}Disponible maintenant{% else %}Indisponible{% endif %}
+                                </span>
+                                {% if profile.rateTnd %}
+                                    <span class="text-sm text-slate-600">dès {{ profile.rateTnd }} TND / visite</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono">{{ worker.phone|replace({'': ''}) }}</span>
+                        <button type="button" class="text-sm text-[color:var(--hak-green)] hover:underline" onclick="navigator.clipboard.writeText('+216 {{ worker.phone }}'); this.textContent='Copié';">Copier</button>
+                    </div>
+                    <button class="btn-primary" data-open-request data-worker="{{ worker.id }}">Envoyer une demande</button>
+                </div>
+
+                <dialog id="request-{{ worker.id }}" class="rounded-xl p-0 backdrop:bg-black/40">
+                    <form method="post" action="{{ path('app_client_request_create', {id: profile.id}) }}" class="w-[min(92vw,420px)] p-4 sm:p-5">
+                        <input type="hidden" name="_token" value="{{ csrf_token('request_' ~ profile.id) }}">
+                        <header class="mb-3">
+                            <h3 class="text-lg font-semibold">Demande à {{ worker.fullName }}</h3>
+                            <p class="text-sm text-slate-600">{{ profile.trade.name }} · {{ worker.city.name }}</p>
+                        </header>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Nom</label>
+                            <input value="{{ app.user.fullName }}" readonly class="w-full rounded-lg border border-slate-200 px-3 py-3 bg-slate-50" style="min-height:44px;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Téléphone</label>
+                            <input value="+216 {{ app.user.phone }}" readonly class="w-full rounded-lg border border-slate-200 px-3 py-3 bg-slate-50" style="min-height:44px;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1" for="message-{{ worker.id }}">Description du problème *</label>
+                            <textarea id="message-{{ worker.id }}" name="message" required rows="4" class="w-full rounded-lg border border-slate-200 px-3 py-3" style="min-height:44px;"></textarea>
+                        </div>
+                        <label class="mb-3 flex items-start gap-3">
+                            <input type="checkbox" name="urgent" value="1" {% if not profile.isAvailable %}disabled{% endif %} class="mt-1">
+                            <span class="text-sm">C’est urgent, alerter l’artisan</span>
+                        </label>
+                        <div class="flex items-center justify-end gap-2">
+                            <button type="button" class="btn-ghost" data-close-request>Annuler</button>
+                            <button class="btn-primary">Envoyer</button>
+                        </div>
+                    </form>
+                </dialog>
+            </article>
+        {% else %}
+            <div class="card p-6 text-center text-slate-600">
+                Aucun artisan trouvé pour ces filtres.
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<script>
+document.querySelectorAll('[data-open-request]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-worker');
+        const dialog = document.getElementById('request-' + id);
+        if (dialog && typeof dialog.showModal === 'function') {
+            dialog.showModal();
+        }
+    });
+});
+
+document.querySelectorAll('[data-close-request]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const dialog = btn.closest('dialog');
+        if (dialog) dialog.close();
+    });
+});
+</script>
+{% endblock %}

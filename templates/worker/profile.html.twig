@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil artisan — Hak 7all{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-2xl">
+    <header class="mb-4">
+        <h1 class="text-2xl font-bold">Mon profil artisan</h1>
+        <p class="text-slate-600">Renseignez vos informations pour apparaître dans les recherches.</p>
+    </header>
+
+    {% if not app.user.verified %}
+        <div class="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-amber-900 border border-amber-200">
+            <p class="font-medium">E-mail non vérifié</p>
+            <p class="text-sm mt-1">Vérifiez votre e-mail pour apparaître dans les résultats. Un compte non vérifié ne peut pas apparaître dans les recherches.</p>
+            <form method="post" action="{{ path('app_resend_verification') }}" class="mt-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('resend_verification') }}">
+                <button class="text-sm underline">Renvoyer l’e-mail de vérification</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <div class="card p-4 sm:p-6">
+        {% if form %}
+            {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                        {{ form_label(form.fullName) }}
+                        {{ form_widget(form.fullName, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                        {{ form_errors(form.fullName) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.trade) }}
+                        {{ form_widget(form.trade, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                        {{ form_errors(form.trade) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.city) }}
+                        {{ form_widget(form.city, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                        {{ form_errors(form.city) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.phone) }}
+                        {{ form_widget(form.phone, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                        <p class="text-xs text-slate-500 mt-1">{{ form_help(form.phone) }}</p>
+                        {{ form_errors(form.phone) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.rateTnd) }}
+                        {{ form_widget(form.rateTnd, {attr: {class: 'w-full rounded-lg border border-slate-200 px-3 py-3', style: 'min-height:44px;'}}) }}
+                        {{ form_errors(form.rateTnd) }}
+                    </div>
+                </div>
+
+                <div class="mt-4 flex flex-col gap-2">
+                    <label class="flex items-center gap-3">
+                        {{ form_widget(form.isAvailable, {attr: {class: 'h-5 w-5'}}) }}
+                        <span class="font-medium">{{ form_label(form.isAvailable) }}</span>
+                    </label>
+                    <p class="text-sm text-slate-600">{{ form_help(form.isAvailable) }}</p>
+                    {{ form_errors(form.isAvailable) }}
+
+                    <label class="flex items-center gap-3">
+                        {{ form_widget(form.phonePublic, {attr: {class: 'h-5 w-5'}}) }}
+                        <span class="font-medium">{{ form_label(form.phonePublic) }}</span>
+                    </label>
+                    {{ form_errors(form.phonePublic) }}
+                </div>
+
+                {{ form_rest(form) }}
+
+                <button class="btn-primary mt-4">Enregistrer</button>
+            {{ form_end(form) }}
+        {% endif %}
+    </div>
+
+    <div class="mt-4 card p-4">
+        <h2 class="font-semibold mb-2">Notifications</h2>
+        <p class="text-sm text-slate-600 mb-3">Activez les notifications pour recevoir les demandes même si l’application est fermée.</p>
+        <button id="btn-push" class="btn-ghost border border-slate-200">Activer les notifications</button>
+        <p id="push-status" class="mt-2 text-sm text-slate-600"></p>
+    </div>
+</section>
+
+<script>
+const btnPush = document.getElementById('btn-push');
+const pushStatus = document.getElementById('push-status');
+
+async function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+if (btnPush) {
+    btnPush.addEventListener('click', async () => {
+        try {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                pushStatus.textContent = 'Notifications non prises en charge par ce navigateur.';
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                pushStatus.textContent = 'Permission refusée.';
+                return;
+            }
+
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') {
+                    await audioCtx.resume();
+                }
+            } catch (e) {}
+
+            const reg = await navigator.serviceWorker.ready;
+            const res = await fetch('{{ path('app_push_public_key') }}');
+            const { publicKey } = await res.json();
+            if (!publicKey) {
+                pushStatus.textContent = 'Clés de notification non configurées.';
+                return;
+            }
+
+            let sub = await reg.pushManager.getSubscription();
+            if (!sub) {
+                sub = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: await urlBase64ToUint8Array(publicKey),
+                });
+            }
+
+            await fetch('{{ path('app_push_subscribe') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sub.toJSON()),
+            });
+
+            pushStatus.textContent = 'Notifications activées sur cet appareil.';
+        } catch (e) {
+            pushStatus.textContent = 'Erreur lors de l’activation des notifications.';
+        }
+    });
+}
+</script>
+{% endblock %}

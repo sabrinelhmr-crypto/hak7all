@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demandes reçues — Hak 7all{% endblock %}
+
+{% block body %}
+<section>
+    <header class="mb-4">
+        <h1 class="text-2xl font-bold">Demandes reçues</h1>
+        <p class="text-slate-600">Acceptez ou refusez les demandes.</p>
+    </header>
+
+    <div class="grid gap-3">
+        {% for request in requests %}
+            <article class="card p-4 {% if request.isUrgent and request.isPending %}border-orange-300{% endif %}" id="demande-{{ request.id }}">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="font-semibold">{{ request.client.fullName }}</h2>
+                            {% if request.isUrgent %}
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-orange-50 text-[color:var(--hak-orange)]">Urgent</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-slate-600">{{ request.createdAt|date('d/m/Y H:i') }}</p>
+                        <p class="mt-2 text-sm whitespace-pre-line">{{ request.message }}</p>
+                    </div>
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs {% if request.status == 'accepted' %}bg-emerald-50 text-emerald-700{% elseif request.status == 'declined' %}bg-red-50 text-red-700{% else %}bg-slate-100 text-slate-600{% endif %}">{{ request.statusLabel }}</span>
+                </div>
+
+                {% if request.isPending %}
+                    <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                        <form method="post" action="{{ path('app_worker_request_accept', {id: request.id}) }}" class="flex-1">
+                            <input type="hidden" name="_token" value="{{ csrf_token('request_' ~ request.id) }}">
+                            <button class="btn-primary w-full">Accepter</button>
+                        </form>
+                        <form method="post" action="{{ path('app_worker_request_decline', {id: request.id}) }}" class="flex-1">
+                            <input type="hidden" name="_token" value="{{ csrf_token('request_' ~ request.id) }}">
+                            <button class="btn-ghost w-full border border-slate-200">Refuser</button>
+                        </form>
+                    </div>
+                {% elseif request.isAccepted %}
+                    <div class="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2">
+                        <div>
+                            <p class="text-sm font-medium text-emerald-900">Client contactable</p>
+                            <p class="font-mono text-emerald-900">+216 {{ request.client.phone }}</p>
+                        </div>
+                        <button class="text-sm text-emerald-900 hover:underline" onclick="navigator.clipboard.writeText('+216 {{ request.client.phone }}'); this.textContent='Copié';">Copier</button>
+                    </div>
+                {% endif %}
+            </article>
+        {% else %}
+            <div class="card p-6 text-center text-slate-600">
+                Aucune demande reçue pour le moment.
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<div id="urgent-alert" class="fixed inset-0 hidden items-center justify-center bg-black/70 p-4 z-50" role="alert">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+        <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--hak-orange)]/10 text-[color:var(--hak-orange)]">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h2 class="text-xl font-bold">Demande URGENTE</h2>
+        <p id="urgent-alert-body" class="mt-2 text-slate-600"></p>
+        <div class="mt-4 flex flex-col gap-2">
+            <a id="urgent-alert-link" href="#" class="btn-orange">Voir la demande</a>
+            <button id="urgent-alert-dismiss" class="btn-ghost">Plus tard</button>
+        </div>
+    </div>
+</div>
+
+{% if app.user %}
+<script>
+const topic = 'user/{{ app.user.id }}/requests';
+const url = new URL('{{ mercure() }}');
+url.searchParams.append('topic', topic);
+
+let audioCtx;
+function playBeep() {
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const oscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioCtx.destination);
+        oscillator.frequency.value = 880;
+        oscillator.type = 'sine';
+        gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.4);
+    } catch (e) {}
+}
+
+function beepThreeTimes() {
+    playBeep();
+    setTimeout(playBeep, 600);
+    setTimeout(playBeep, 1200);
+}
+
+const alertEl = document.getElementById('urgent-alert');
+const alertBody = document.getElementById('urgent-alert-body');
+const alertLink = document.getElementById('urgent-alert-link');
+const alertDismiss = document.getElementById('urgent-alert-dismiss');
+
+alertDismiss.addEventListener('click', () => {
+    alertEl.classList.add('hidden');
+    alertEl.classList.remove('flex');
+});
+
+function showUrgent(data) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // minimal animation
+    }
+    alertBody.textContent = data.body || 'Nouvelle demande urgente.';
+    alertLink.href = '{{ path('app_worker_requests') }}#demande-' + (data.requestId || '');
+    alertEl.classList.remove('hidden');
+    alertEl.classList.add('flex');
+    beepThreeTimes();
+}
+
+const eventSource = new EventSource(url);
+eventSource.onmessage = (event) => {
+    try {
+        const data = JSON.parse(event.data);
+        if (data.isUrgent && (data.type === 'new_request' || data.type === 'urgent_escalation')) {
+            showUrgent(data);
+            fetch('{{ path('app_worker_badge') }}').then((r) => r.json()).then((d) => {
+                const badge = document.getElementById('worker-badge');
+                if (badge) {
+                    if (d.pending > 0) {
+                        badge.textContent = d.pending;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            });
+        }
+    } catch (e) {}
+};
+</script>
+{% endif %}
+{% endblock %}
