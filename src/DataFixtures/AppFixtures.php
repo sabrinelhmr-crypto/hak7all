@@ -38,11 +38,23 @@ class AppFixtures extends Fixture
 
         $workerData = [
             ['name' => 'Mohamed Trabelsi', 'email' => 'mohamed.trabelsi@example.tn', 'phone' => '98123456', 'city' => 'Sousse', 'trade' => 'Plombier', 'rate' => 40],
+            ['name' => 'Nizar Khelifi', 'email' => 'nizar.khelifi@example.tn', 'phone' => '97123456', 'city' => 'Sfax', 'trade' => 'Plombier', 'rate' => 45],
+            ['name' => 'Wael Mansour', 'email' => 'wael.mansour@example.tn', 'phone' => '96123456', 'city' => 'Monastir', 'trade' => 'Plombier', 'rate' => 38],
             ['name' => 'Amine Ben Salah', 'email' => 'amine.bensalah@example.tn', 'phone' => '98234567', 'city' => 'Monastir', 'trade' => 'Électricien', 'rate' => 35],
+            ['name' => 'Bilel Hammami', 'email' => 'bilel.hammami@example.tn', 'phone' => '97234567', 'city' => 'Sousse', 'trade' => 'Électricien', 'rate' => 40],
+            ['name' => 'Yassine Ferchichi', 'email' => 'yassine.ferchichi@example.tn', 'phone' => '96234567', 'city' => 'Mahdia', 'trade' => 'Électricien', 'rate' => 32],
             ['name' => 'Hassen Gharbi', 'email' => 'hassen.gharbi@example.tn', 'phone' => '98345678', 'city' => 'Mahdia', 'trade' => 'Climatisation', 'rate' => 60],
+            ['name' => 'Sofiene Dridi', 'email' => 'sofiene.dridi@example.tn', 'phone' => '97345678', 'city' => 'Sousse', 'trade' => 'Climatisation', 'rate' => 55],
+            ['name' => 'Mehdi Kacem', 'email' => 'mehdi.kacem@example.tn', 'phone' => '96345678', 'city' => 'Sfax', 'trade' => 'Climatisation', 'rate' => 65],
             ['name' => 'Karim Jaziri', 'email' => 'karim.jaziri@example.tn', 'phone' => '98456789', 'city' => 'Sfax', 'trade' => 'Serrurier', 'rate' => 30],
+            ['name' => 'Anis Belhaj', 'email' => 'anis.belhaj@example.tn', 'phone' => '97456789', 'city' => 'Sousse', 'trade' => 'Serrurier', 'rate' => 35],
+            ['name' => 'Ridha Saidi', 'email' => 'ridha.saidi@example.tn', 'phone' => '96456789', 'city' => 'Monastir', 'trade' => 'Serrurier', 'rate' => 28],
             ['name' => 'Sami Chaabane', 'email' => 'sami.chaabane@example.tn', 'phone' => '98567890', 'city' => 'Sousse', 'trade' => 'Peintre', 'rate' => 25],
+            ['name' => 'Fethi Oueslati', 'email' => 'fethi.oueslati@example.tn', 'phone' => '97567890', 'city' => 'Mahdia', 'trade' => 'Peintre', 'rate' => 30],
+            ['name' => 'Chokri Ben Amor', 'email' => 'chokri.benamor@example.tn', 'phone' => '96567890', 'city' => 'Sfax', 'trade' => 'Peintre', 'rate' => 27],
             ['name' => 'Tarek Bouazizi', 'email' => 'tarek.bouazizi@example.tn', 'phone' => '98678901', 'city' => 'Monastir', 'trade' => 'Menuisier', 'rate' => 45],
+            ['name' => 'Lotfi Mejri', 'email' => 'lotfi.mejri@example.tn', 'phone' => '97678901', 'city' => 'Sousse', 'trade' => 'Menuisier', 'rate' => 50],
+            ['name' => 'Hatem Bouzid', 'email' => 'hatem.bouzid@example.tn', 'phone' => '96678901', 'city' => 'Mahdia', 'trade' => 'Menuisier', 'rate' => 42],
         ];
 
         foreach ($workerData as $data) {

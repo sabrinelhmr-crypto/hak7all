@@ -52,7 +52,7 @@
 
                 <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div class="flex items-center gap-2">
-                        <span class="font-mono">{{ worker.phone|replace({'': ''}) }}</span>
+                        <span class="font-mono">+216 {{ worker.phone }}</span>
                         <button type="button" class="text-sm text-[color:var(--hak-green)] hover:underline" onclick="navigator.clipboard.writeText('+216 {{ worker.phone }}'); this.textContent='Copié';">Copier</button>
                     </div>
                     <button class="btn-primary" data-open-request data-worker="{{ worker.id }}">Envoyer une demande</button>

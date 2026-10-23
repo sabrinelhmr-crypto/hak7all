@@ -40,13 +40,6 @@ class ClientController extends AbstractController
 
         if (!$user->isVerified()) {
             $this->addFlash('warning', 'Vérifiez votre e-mail pour pouvoir envoyer des demandes.');
-
-            return $this->render('client/search.html.twig', [
-                'trades' => $tradeRepository->findAllOrdered(),
-                'profiles' => [],
-                'selectedTrade' => null,
-                'onlyAvailable' => false,
-            ]);
         }
 
         $tradeId = $request->query->get('metier');
@@ -57,7 +50,7 @@ class ClientController extends AbstractController
             $trade = $tradeRepository->find($tradeId);
         }
 
-        $profiles = $workerProfileRepository->search($trade, $user->getCity(), (bool) $onlyAvailable, $user->getCity());
+        $profiles = $workerProfileRepository->search($trade, null, (bool) $onlyAvailable, $user->getCity());
 
         return $this->render('client/search.html.twig', [
             'trades' => $tradeRepository->findAllOrdered(),
