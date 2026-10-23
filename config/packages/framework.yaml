@@ -5,6 +5,9 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    # Fait confiance au tunnel local (cloudflared) pour détecter le https correctement.
+    trusted_proxies: ['127.0.0.1', '::1']
+
     #esi: true
     #fragments: true
 
