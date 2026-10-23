@@ -9,6 +9,12 @@
 1. Démarrer Apache et MariaDB depuis xampp-control.exe
 2. Ouvrir un terminal dans C:\Users\admin\Desktop\hak7all
 3. Copier .env.example vers .env.local et ajuster si nécessaire
+4. Installer et compiler les styles (Tailwind) :
+```bash
+npm install
+npm run build:css
+```
+   Pendant le développement : `npm run watch:css`
 
 ## Base de données
 `ash
