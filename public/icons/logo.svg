@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hak 7all">
+  <defs>
+    <linearGradient id="hakGreen" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#17907a"/>
+      <stop offset="1" stop-color="#0f6b5c"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#hakGreen)"/>
+  <rect x="14.5" y="13.5" width="9.5" height="37" rx="4.75" fill="#ffffff"/>
+  <rect x="40" y="13.5" width="9.5" height="37" rx="4.75" fill="#ffffff"/>
+  <rect x="21" y="27.5" width="22" height="9.5" rx="4.75" fill="#e8530e" transform="rotate(-7 32 32.25)"/>
+</svg>

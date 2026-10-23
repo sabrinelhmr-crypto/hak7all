@@ -6,7 +6,9 @@
         <title>{% block title %}Hak 7all{% endblock %}</title>
         <meta name="theme-color" content="#0f6b5c">
         <link rel="manifest" href="{{ asset('manifest.json') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('icons/logo.svg') }}">
         <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +23,8 @@
     <body class="min-h-screen">
         <header class="sticky top-0 z-40 bg-[color:var(--hak-green)] text-white">
             <div class="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-                <a href="{{ path('app_home') }}" class="flex items-center gap-2">
+                <a href="{{ path('app_home') }}" class="flex items-center gap-2.5">
+                    <img src="{{ asset('icons/logo.svg') }}" alt="" width="32" height="32" class="h-8 w-8 rounded-lg ring-2 ring-white/25">
                     <span class="text-lg font-bold" style="font-family:'Bricolage Grotesque',sans-serif;">Hak 7all</span>
                     <span class="hidden sm:inline text-sm opacity-90">artisans près de chez vous</span>
                 </a>
